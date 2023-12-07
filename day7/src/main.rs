@@ -13,10 +13,10 @@ fn main() {
         include_str!(concat!(std::env!("CARGO_MANIFEST_DIR"), "/d7input"))
     };
 
-    p1(input);
+    p2(input);
 }
 
-fn p1(input: &str) {
+fn p2(input: &str) {
     let mut plays: Vec<Play> = input
         .trim()
         .lines()
@@ -36,7 +36,7 @@ fn p1(input: &str) {
         .enumerate()
         .fold(0, |a, (i, Play { bid, .. })| a + bid * (i as u32 + 1));
 
-    println!("Part 1: {result}");
+    println!("Part 2: {result}");
 }
 
 #[derive(PartialEq, Debug)]
@@ -100,7 +100,7 @@ impl PartialOrd for Hand {
 
 impl From<&str> for Hand {
     fn from(value: &str) -> Self {
-        let char_set = value
+        let mut char_set = value
             .chars()
             .fold(HashMap::new(), |mut a: HashMap<char, usize>, c| {
                 a.entry(c).and_modify(|count| *count += 1).or_insert(1);
@@ -112,7 +112,7 @@ impl From<&str> for Hand {
             .map(|c| match c {
                 c if c.is_numeric() => c.to_digit(10).unwrap() as u8,
                 'T' => 10,
-                'J' => 11,
+                'J' => 1,
                 'Q' => 12,
                 'K' => 13,
                 'A' => 14,
@@ -121,6 +121,15 @@ impl From<&str> for Hand {
             .collect::<Vec<u8>>()
             .try_into()
             .unwrap();
+
+        // For `JJJJJ`
+        if char_set.len() > 1 {
+            if let Some(jct) = char_set.remove(&'J') {
+                if let Some(k) = char_set.iter().max_by_key(|(_, &ct)| ct).map(|(k, _)| k) {
+                    char_set.entry(*k).and_modify(|x| *x += jct);
+                };
+            };
+        }
 
         use Hand::*;
         match char_set.len() {
@@ -195,10 +204,10 @@ mod tests {
 
         // same hands
         let hand1 = Hand::from("KK677");
-        let hand2 = Hand::from("KTJJT");
-        assert!(hand1 > hand2);
-        let hand1 = Hand::from("T55J5");
-        let hand2 = Hand::from("QQQJA");
+        let hand2 = Hand::from("KTJJT"); // KTTTT
+        assert!(hand1 < hand2);
+        let hand1 = Hand::from("T55J5"); // T5555
+        let hand2 = Hand::from("QQQJA"); // QQQQA
         assert!(hand1 < hand2);
     }
 }
