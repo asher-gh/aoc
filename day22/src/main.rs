@@ -1,7 +1,5 @@
-use std::{
-    collections::{HashMap, HashSet, VecDeque},
-    time::{Duration, Instant},
-};
+use std::collections::{HashMap, HashSet, VecDeque};
+use utils::time;
 
 fn main() {
     let input = if cfg!(debug_assertions) {
@@ -117,12 +115,6 @@ fn p2(input: &str) -> u32 {
     }
 
     res as u32
-}
-
-fn time<T, F: FnMut() -> T>(mut f: F) -> (Duration, T) {
-    let start = Instant::now();
-    let x = f();
-    (start.elapsed(), x)
 }
 
 fn overlap(a: &[u32], b: &[u32]) -> bool {
